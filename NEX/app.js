@@ -459,13 +459,35 @@ function renderStats(){
   const cnt=k=>rows.filter(c=>c.h===k).length, units=k=>sum(rows.filter(c=>c.h===k),c=>c.A);
   const healthyPct=Math.round(cnt('moving')/rows.length*100);
   const reorder=rows.filter(c=>c.rate>0&&c.activeSkus!==0&&c.A+c.onOrder<=Math.max(c.reorderPt||0,c.rate)).sort((a,b)=>(a.ms??0)-(b.ms??0));
+
+  /* CIC-owned stock value vs. the 3-4 month supply target CIC tries to hold */
+  const cicRows=rows.filter(c=>c.own!=='Consignment');
+  const cicVal=sum(cicRows,c=>c.val);
+  const monthlySpend=sum(cicRows,c=>rateOf(c)*unitOf(c));
+  const tgt3=monthlySpend*3, tgt4=monthlySpend*4;
+  const tgtStatus=monthlySpend<=0?null:(cicVal<tgt3?'under':cicVal>tgt4?'over':'in');
+  const tgtLabel={under:'Under target — room to reorder',in:'In the 3–4 month range',over:'Over target — more than 4 months on hand'};
+  const tgtMonths=monthlySpend>0?cicVal/monthlySpend:null;
+
   html+=`<div class="kpis">
    <div class="kpi lead"><span class="l">Healthy items</span><span class="v">${healthyPct}%</span><span class="s">${cnt('moving')} of ${rows.length} items moving</span></div>
    <div class="kpi"><span class="l">Store items</span><span class="v">${fmtN(rows.length)}</span><span class="s">${rows.filter(c=>c.skuStatus==='Discontinued').length} fully discontinued in SAP</span></div>
    <div class="kpi"><span class="l">Units available</span><span class="v">${fmtN(avail)}</span><span class="s">${fmtN(onOrd)} more on order</span></div>
    <div class="kpi"><span class="l">Stock value</span><span class="v">${fmtMoney(val)}</span><span class="s">Available units × store price</span></div>
    <div class="kpi"><span class="l">Sold, 12 months</span><span class="v">${fmtN(sold12)}</span><span class="s">${yoy===null?'No prior year':`<span class="delta ${yoy<0?'dn':'up'}">${yoy>0?'▲ +':yoy<0?'▼ ':''}${yoy}%</span> vs prior 12 months`}</span></div>
-   <div class="kpi"><span class="l">Months of stock</span><span class="v">${mos===null?'—':mos.toFixed(1)}</span><span class="s">At the last-90-day pace</span></div></div>`;
+   <div class="kpi"><span class="l">Months of stock</span><span class="v">${mos===null?'—':mos.toFixed(1)}</span><span class="s">At the last-90-day pace</span></div>
+   <div class="kpi"><span class="l">CIC-owned inventory value</span><span class="v">${fmtMoney(cicVal)}</span><span class="s">${tgtMonths===null?'No recent sales to size a target':`≈ ${tgtMonths.toFixed(1)} months of spend vs. CIC's 3–4 month target (${fmtMoney(tgt3)}–${fmtMoney(tgt4)})`}</span></div></div>`;
+  if(tgtStatus){
+    const pos=Math.max(0,Math.min(100,(tgtMonths/6)*100));
+    html+=`<div class="panels"><div class="panel wide"><h3>CIC inventory value vs. 3–4 month target</h3><p class="sub">CIC aims to hold about 3–4 months of spend in stock. Below ${fmtMoney(tgt3)} is room to reorder; above ${fmtMoney(tgt4)} is more than CIC's target to be carrying.</p>
+     <div class="hbar" role="img" aria-label="Inventory value vs. 3-4 month target" style="position:relative;height:28px">
+       <i style="width:${Math.min(100,tgt3/ (monthlySpend*6) *100)}%;background:var(--muted,#ccc);opacity:.35"></i>
+       <i style="width:${Math.max(0,Math.min(100,tgt4/(monthlySpend*6)*100)-Math.min(100,tgt3/(monthlySpend*6)*100))}%;background:#2e7d32;opacity:.35"></i>
+       <i style="width:${Math.max(0,100-Math.min(100,tgt4/(monthlySpend*6)*100))}%;background:#c62828;opacity:.2"></i>
+       <span style="position:absolute;left:${pos}%;top:-2px;transform:translateX(-50%);font-weight:800;font-size:11px;background:#111;color:#fff;border-radius:4px;padding:1px 6px">${fmtMoney(cicVal)}</span>
+     </div>
+     <p class="sub" style="margin-top:14px"><b>${tgtLabel[tgtStatus]}</b> — CIC currently holds ${fmtMoney(cicVal)} in store-price stock value (CIC-owned items only), against a 3–4 month target of ${fmtMoney(tgt3)}–${fmtMoney(tgt4)} based on the last-90-day sell-through pace.</p></div></div>`;
+  }
 
   /* health overview + reorder */
   const hseg=(n,tot,k,what)=>n?`<i style="width:${n/tot*100}%;background:${HEALTH[k].c}" data-tip="<b>${HEALTH[k].label}</b>${fmtN(n)} ${what} (${Math.round(n/tot*100)}%)"></i>`:'';
