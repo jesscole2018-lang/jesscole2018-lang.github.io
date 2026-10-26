@@ -1,11 +1,7 @@
-/* ---------- programs: mirror the Nextiva Company Store menus ---------- */
+/* ---------- programs: Nextiva has one storefront, not multiple business-unit programs ---------- */
 const BRANDS=[
-  {id:'nex', name:'Nextiva Company Store', short:'Company Store', blurb:'Core Nextiva Company Store catalog: apparel, headwear, drinkware and everyday swag.'},
-  {id:'apparel', name:'Apparel', short:'Apparel', blurb:'Nextiva-branded tees, polos, outerwear and other apparel.'},
-  {id:'drinkware', name:'Drinkware', short:'Drinkware', blurb:'Mugs, tumblers, bottles and other drinkware.'},
-  {id:'home', name:'Home & Office', short:'Home/Office', blurb:'Desk, tech and home/office items.'},
-  {id:'swag', name:'Swag', short:'Swag', blurb:'Giveaways, pet items and other fun swag.'},
-  {id:'sale', name:'Last Chance', short:'Last Chance', blurb:'Every item CIC recommends putting on sale, across all programs, with a suggested discount.'}
+  {id:'nex', name:'Nextiva Company Store', short:'Company Store', blurb:'Everything currently stocked in the Nextiva Company Store: apparel, headwear, drinkware, bags, desk/tech and swag. Use the category filter to narrow by item type.'},
+  {id:'sale', name:'Last Chance', short:'Last Chance', blurb:'Every item CIC recommends putting on sale, with a suggested discount.'}
 ];
 
 /* ---------- current store items ----------
@@ -426,7 +422,7 @@ function sampleData(){
   if(SAMPLE) return SAMPLE;
   let s=20261021; const r=()=>(s=(s*48271)%2147483647)/2147483647;
   const T=[['Apparel','Performance Polo',28],['Apparel','Tri-Blend Tee',12],['Apparel','Quarter-Zip',42],['Apparel','Pullover Hoodie',38],['Headwear','Dad Cap',14],['Headwear','Knit Beanie',11],['Drinkware','40 oz Tumbler',32],['Drinkware','Ceramic Mug',9],['Bags','Laptop Backpack',55],['Bags','Canvas Tote',8],['Desk','Soft Journal',13],['Tech','Power Bank',24],['Fun & Giveaways','Stress Ball',2],['Apparel','Fleece Vest',44],['Drinkware','Water Bottle',18]];
-  const P=['nex','nex','nex','apparel','apparel','drinkware','home','swag'];
+  const P=['nex'];
   SAMPLE=Array.from({length:42},(_,i)=>{
     const [cat,nm,price]=T[i%T.length];
     const brand=P[Math.floor(r()*P.length)];
