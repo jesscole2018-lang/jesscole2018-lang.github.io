@@ -21,10 +21,19 @@
     gate(`<h1>Merchandise Review</h1><p class="gsub">${esc(CFG.storeName || '')}${CFG.storeName ? ' · ' : ''}prepared by CIC</p>
       <form id="signin" autocomplete="on">
         <label>Email<input id="gEmail" type="email" required autocomplete="username"></label>
-        <label>Password<input id="gPass" type="password" required autocomplete="current-password"></label>
+        <label>Password</label>
+        <div class="gpass">
+          <input id="gPass" type="password" required autocomplete="current-password">
+          <button class="gshow" type="button" id="gShow" tabindex="-1" aria-label="Show password">Show</button>
+        </div>
         <button class="gbtn" type="submit">Sign in</button>
         <p id="gateMsg" class="gmsg">${note || 'Use the email and password CIC sent you.'}</p>
       </form>`);
+    $g('gShow').onclick = () => {
+      const show = $g('gPass').type === 'password';
+      $g('gPass').type = show ? 'text' : 'password';
+      $g('gShow').textContent = show ? 'Hide' : 'Show';
+    };
     $g('signin').onsubmit = async e => {
       e.preventDefault(); gateMsg('Signing in…');
       const { error } = await sb.auth.signInWithPassword({ email: $g('gEmail').value.trim(), password: $g('gPass').value });
