@@ -43,6 +43,36 @@
   async function signOut(){ await sb.auth.signOut(); location.hash = ''; location.reload(); }
   window.fndSignOut = signOut;
 
+  /* ---------- set a new password (from a recovery-link session, or by choice while signed in) ---------- */
+  function showSetPassword(afterLabel){
+    gate(`<h1>Set a new password</h1><p class="gsub">${esc(CFG.storeName || '')}${CFG.storeName ? ' · ' : ''}prepared by CIC</p>
+      <form id="setpw">
+        <label>New password</label>
+        <div class="gpass">
+          <input id="gNewPass" type="password" required minlength="6" autocomplete="new-password">
+          <button class="gshow" type="button" id="gShowNew" tabindex="-1" aria-label="Show password">Show</button>
+        </div>
+        <button class="gbtn" type="submit">Save password</button>
+        <p id="gateMsg" class="gmsg">At least 6 characters.</p>
+        ${afterLabel ? '<p class="gmsg"><a href="#" id="gCancelPw">Cancel</a></p>' : ''}
+      </form>`);
+    $g('gShowNew').onclick = () => {
+      const show = $g('gNewPass').type === 'password';
+      $g('gNewPass').type = show ? 'text' : 'password';
+      $g('gShowNew').textContent = show ? 'Hide' : 'Show';
+    };
+    if (afterLabel) $g('gCancelPw').onclick = e => { e.preventDefault(); $g('gate').hidden = true; };
+    $g('setpw').onsubmit = async e => {
+      e.preventDefault(); gateMsg('Saving…');
+      const { error } = await sb.auth.updateUser({ password: $g('gNewPass').value });
+      if (error){ gateMsg('Could not save: ' + error.message, true); return; }
+      gateMsg('Password saved. Opening the site…');
+      location.hash = '';
+      setTimeout(() => { if (afterLabel){ $g('gate').hidden = true; } else { start(); } }, 700);
+    };
+  }
+  sb.auth.onAuthStateChange((event) => { if (event === 'PASSWORD_RECOVERY') showSetPassword(); });
+
   async function loadMe(){
     const { data: { user } } = await sb.auth.getUser();
     if (!user) return null;
@@ -171,6 +201,10 @@
   }
   function addAccountChip(){
     const links = document.querySelector('.hdr-links'); if (!links) return;
+    const pw = document.createElement('a'); pw.href = '#'; pw.className = 'hdr-link'; pw.title = 'Change password for ' + me.email;
+    pw.textContent = 'Change password';
+    pw.onclick = e => { e.preventDefault(); showSetPassword(true); };
+    links.appendChild(pw);
     const a = document.createElement('a'); a.href = '#'; a.className = 'hdr-link'; a.title = 'Signed in as ' + me.email + ' — click to sign out';
     a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Sign out';
     a.onclick = e => { e.preventDefault(); signOut(); };
