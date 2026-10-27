@@ -151,6 +151,8 @@ function score(c){
   return c;
 }
 CURRENT.forEach(score);
+/* drop items with nothing left to review: zero available, no PO on order, and the store listing is off (e.g. MM Collapsible Red Pet Bowl, MOV160007) */
+for(let i=CURRENT.length-1;i>=0;i--){ const c=CURRENT[i]; if(c.availPos<=0&&c.onOrder<=0&&c.storeStatus!=='In Store') CURRENT.splice(i,1); }
 
 
 /* ---------- routing: #mm-current, #mm, #inv-SKU, #item-ID, #summary ---------- */
