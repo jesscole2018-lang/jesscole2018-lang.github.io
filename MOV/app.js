@@ -50,6 +50,8 @@ const CATS=['Apparel','Headwear','Drinkware','Bags','Desk','Events','Gifting','F
 const INVREC={keep:{label:'Keep',cls:'keep',chip:'ok'},sale:{label:'Put on Sale',cls:'sale',chip:'warn'},buyback:{label:'Buyback',cls:'buyback',chip:''},disc:{label:'Discontinue',cls:'disc',chip:'bad'}};
 const discKeep=c=>c.rec==='keep'&&c.skuStatus==='Discontinued';
 const recL=c=>(c.rec==='sale'&&c.skuStatus==='Active')?'Discontinue/Sale':discKeep(c)?'Sell Through':(INVREC[c.rec]||INVREC.keep).label;
+/* already-discontinued SKUs: only surface a CIC Recommendation badge on the card when it's an active call (Put on Sale); otherwise it just repeats "SKU Discontinued" with nothing new, so leave it blank */
+const hideCardRec=c=>c.skuStatus==='Discontinued'&&c.rec!=='sale';
 const RECORDER={keep:0,sale:1,buyback:2,disc:3};
 const INVDEC={keep:{label:'Keep',cls:'ok',icon:'✓'},sale:{label:'Put on Sale',cls:'warn',icon:'%'},buyback:{label:'Buyback',cls:'',icon:'↩'},disc:{label:'Discontinue',cls:'bad',icon:'✕'},discuss:{label:'Discuss',cls:'pend',icon:'?'}};
 const SUGDEC={approved:{label:'Approved',cls:'ok',icon:'✓'},changes:{label:'Approved w/ changes',cls:'warn',icon:'✎'},declined:{label:'Declined',cls:'bad',icon:'✕'}};
@@ -250,9 +252,9 @@ function renderCurrent(b){
 const b0=c=>current.brand==='sale'?' · '+esc(brandOf(c.brand).short):'';
 function invCard(c){
   const d=invDecisions[c.id], ch=pct(c.sold12,c.soldPrior), r=INVREC[c.rec]||INVREC.keep;
-  return `<a class="card" href="#inv-${esc(c.id)}"><div class="ph">${img(c.img,c.name)}${discKeep(c)?'':`<span class="flag ${r.cls}">CIC: ${recL(c)}</span>`}<span class="flag r ${c.skuStatus==='Active'?'':'off'}">SKU ${esc(c.skuStatus)}</span></div>
+  return `<a class="card" href="#inv-${esc(c.id)}"><div class="ph">${img(c.img,c.name)}${hideCardRec(c)?'':`<span class="flag ${r.cls}">CIC: ${recL(c)}</span>`}<span class="flag r ${c.skuStatus==='Active'?'':'off'}">SKU ${esc(c.skuStatus)}</span></div>
   <div class="cb"><span class="kind">${esc(c.category)} · ${esc(c.id)}${b0(c)}</span><div class="nm" title="${esc(c.name)}">${esc(c.name)}</div>
-  <div class="crec ${r.cls}"><span class="l">CIC Recommendation</span><span class="v">${recL(c)}</span>${c.rec==='sale'&&c.salePct?`<span class="s">Sale: ${c.salePct}% off</span>`:''}</div>
+  ${hideCardRec(c)?'':`<div class="crec ${r.cls}"><span class="l">CIC Recommendation</span><span class="v">${recL(c)}</span>${c.rec==='sale'&&c.salePct?`<span class="s">Sale: ${c.salePct}% off</span>`:''}</div>`}
   <dl class="cst"><dt>Available</dt><dd>${fmtA(c)}</dd>${c.onOrder?`<dt class="oo">On Order:</dt><dd class="oo">${fmtN(c.onOrder)}</dd>`:''}<dt>Sold, last 12 mo</dt><dd>${fmtN(c.sold12)}${ch!==null?` <small class="${ch>0?'up':ch<0?'dn':''}">${ch>0?'+':''}${ch}%</small>`:''}</dd></dl>
   ${(c.own==='Consignment'||(c.storeStatus&&c.storeStatus!=='In Store'))?`<div class="ctags">${c.own==='Consignment'?'<span class="ctag cons"><b><i>Consignment (Movement Owned)</i></b></span>':''}${c.storeStatus&&c.storeStatus!=='In Store'?`<span class="ctag">Store: ${esc(c.storeStatus)}</span>`:''}</div>`:''}
   ${d&&d.status?decChip(d,INVDEC):''}</div></a>`;
