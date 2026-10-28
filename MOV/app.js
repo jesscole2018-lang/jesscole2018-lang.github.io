@@ -258,7 +258,7 @@ function invCard(c){
   <div class="cb"><span class="kind">${esc(c.category)} · ${esc(c.id)}${b0(c)}</span><div class="nm" title="${esc(c.name)}">${esc(c.name)}</div>
   ${hideCardRec(c)?'':`<div class="crec ${r.cls}"><span class="l">CIC Recommendation</span><span class="v">${recL(c)}</span>${c.rec==='sale'&&c.salePct?`<span class="s">Sale: ${c.salePct}% off</span>`:''}</div>`}
   <dl class="cst"><dt>Available</dt><dd>${fmtA(c)}</dd>${c.onOrder?`<dt class="oo">On Order:</dt><dd class="oo">${fmtN(c.onOrder)}</dd>`:''}<dt>Sold, last 12 mo</dt><dd>${fmtN(c.sold12)}${ch!==null?` <small class="${ch>0?'up':ch<0?'dn':''}">${ch>0?'+':''}${ch}%</small>`:''}</dd></dl>
-  ${(c.own==='Consignment'||(c.storeStatus&&c.storeStatus!=='In Store'))?`<div class="ctags">${c.own==='Consignment'?'<span class="ctag cons"><b><i>Consignment (Movement Owned)</i></b></span>':''}${c.storeStatus&&c.storeStatus!=='In Store'?`<span class="ctag">Store: ${esc(c.storeStatus)}</span>`:''}</div>`:''}
+  ${(c.own==='Consignment'||(c.storeStatus&&c.storeStatus!=='In Store'))?`<div class="ctags">${c.own==='Consignment'?'<span class="ctag cons"><b><i>Consignment (Movement Owned)</i></b></span>':''}${c.storeStatus&&c.storeStatus!=='In Store'?`<span class="ctag${c.storeStatus==='Incomplete'?' incomplete':''}">Store: ${esc(c.storeStatus)}</span>`:''}</div>`:''}
   ${d&&d.status?decChip(d,INVDEC):''}</div></a>`;
 }
 
