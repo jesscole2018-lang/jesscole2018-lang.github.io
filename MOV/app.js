@@ -390,7 +390,7 @@ function confirmClear(label,hasSaved,onYes){
 async function clearSaved(coll,map,id){
   const prev=map[id]; if(!prev||!prev.status) return; if(!db) throw Object.assign(new Error('offline'),{code:'offline'});
   const hist=Array.isArray(prev.history)?prev.history.slice(-19):[]; hist.push({status:prev.status,notes:prev.notes||'',reviewer:prev.reviewer||'',at:prev.updatedAt||''});
-  const doc={...prev,status:null,salePct:null,buybackUnits:null,buybackValue:null,notes:'',updatedAt:new Date().toISOString(),clearedBy:myName||'',history:hist};
+  const doc={...prev,status:null,salePct:null,buybackUnits:null,buybackValue:null,notes:'',reviewer:'',updatedAt:null,clearedAt:new Date().toISOString(),clearedBy:myName||'',history:hist};
   await db.doc(coll+'/'+id).set(doc); map[id]=doc;
 }
 
