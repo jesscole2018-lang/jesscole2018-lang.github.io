@@ -257,7 +257,7 @@ function invCard(c){
   return `<a class="card" href="#inv-${esc(c.id)}"><div class="ph">${img(c.img,c.name)}${hideCardRec(c)?'':`<span class="flag ${r.cls}">CIC: ${recL(c)}</span>`}<span class="flag r ${c.skuStatus==='Active'?'':'off'}">SKU ${esc(c.skuStatus)}</span></div>
   <div class="cb"><span class="kind">${esc(c.category)} · ${esc(c.id)}${b0(c)}</span><div class="nm" title="${esc(c.name)}">${esc(c.name)}</div>
   ${hideCardRec(c)?'':`<div class="crec ${r.cls}"><span class="l">CIC Recommendation</span><span class="v">${recL(c)}</span>${c.rec==='sale'&&c.salePct?`<span class="s">Sale: ${c.salePct}% off</span>`:''}</div>`}
-  <dl class="cst"><dt>Available</dt><dd>${fmtA(c)}</dd>${c.onOrder?`<dt class="oo">On Order:</dt><dd class="oo">${fmtN(c.onOrder)}</dd>`:''}<dt>Sold, last 12 mo</dt><dd>${fmtN(c.sold12)}${ch!==null?` <small class="${ch>0?'up':ch<0?'dn':''}">${ch>0?'+':''}${ch}%</small>`:''}</dd></dl>
+  <dl class="cst"><dt>Available</dt><dd>${fmtA(c)}</dd>${c.onOrder?`<dt class="oo">On Order:</dt><dd class="oo">${fmtN(c.onOrder)}</dd>`:''}<dt>Sold, last 12 mo</dt><dd>${fmtN(c.sold12)}${ch!==null?` <small class="${ch>0?'up':ch<0?'dn':''}">${ch>0?'+':''}${ch}%</small>`:''}</dd>${c.added?`<dt>Initial Launch Date</dt><dd>${fmtMonYr(c.added)}</dd>`:''}</dl>
   ${(c.own==='Consignment'||(c.storeStatus&&c.storeStatus!=='In Store'))?`<div class="ctags">${c.own==='Consignment'?'<span class="ctag cons"><b><i>Consignment (Movement Owned)</i></b></span>':''}${c.storeStatus&&c.storeStatus!=='In Store'?`<span class="ctag${c.storeStatus==='Incomplete'?' incomplete':''}">Store: ${esc(c.storeStatus)}</span>`:''}</div>`:''}
   ${d&&d.status?decChip(d,INVDEC):''}</div></a>`;
 }
@@ -423,6 +423,7 @@ const hChip=k=>`<span class="hchip">${hIco(k)}${HEALTH[k].label}</span>`;
 const unitOf=c=>typeof c.unit==='number'?c.unit:(parseFloat(String(c.price||'').replace(/[^0-9.]/g,''))||0);
 const fmtMoney=n=>n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e4?'$'+Math.round(n/1e3)+'K':'$'+Math.round(n).toLocaleString('en-US');
 const fmtDay=d=>{ if(!d) return '—'; const x=new Date(d+'T12:00:00'); return isNaN(x)?d:x.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+const fmtMonYr=d=>{ if(!d) return '—'; const x=new Date(d+'T12:00:00'); return isNaN(x)?d:x.toLocaleDateString('en-US',{month:'long',year:'numeric'}); };
 const ageOf=d=>{ if(!d) return null; const ms=Date.now()-new Date(d+'T12:00:00').getTime(); return ms/(365.25*864e5); };
 
 /* sample set: only used while no real store data is loaded; every name says "Sample" */
