@@ -84,6 +84,9 @@ const ADDED=__D.ADDED||{};
 CURRENT.forEach(c=>{ if(ADDED[c.id]) c.added=ADDED[c.id]; });
 /* items brought back after being discontinued: scored as relaunched, not on their old sales history */
 const RELAUNCHED={MOV220004:{when:'October 2026',date:'2026-10-01',note:'Discontinued about a year ago and brought back: Movement just reordered it'}};
+const ageOf=d=>{ if(!d) return null; const ms=Date.now()-new Date(d+'T12:00:00').getTime(); return ms/(365.25*864e5); };
+/* a product counts as a new arrival if it's flagged isNew OR its Titan setup date is under ~3 months old -- isNew alone can go stale and wrongly push a brand-new, zero-sales item into Buyback */
+const isRecentArrival=c=>c.isNew||(ageOf(c.added)??9)<0.25;
 function score(c){
   const S=c.skus; let oh=0,bk=0,av=0,bo=0,oo=0,rp=0,s12=0,sp=0,s90=0,val=0,act=0;
   S.forEach(s=>{oh+=s[3];bk+=s[4];if(s[5]>0){av+=s[5];val+=s[5]*(s[8]||0);}else bo+=-s[5];oo+=s[6];rp+=s[7];s12+=s[9];sp+=s[10];s90+=s[11];act+=s[2];});
@@ -120,7 +123,7 @@ function score(c){
   } else if(av+oo<=0){
     if(act===0||!listed||s12<12){ rec='disc'; act$='Discontinue: sold out, retire the listing'; W.push('Nothing left to sell and demand is too low to justify a reorder'); }
     else { rec='keep'; act$=`Keep: sold out, reorder${bo?` (${fmtN(bo)} back-ordered)`:''}`; W.push('Still selling: restock before shoppers see "out of stock"'); }
-  } else if(s12===0&&s90===0&&c.isNew){
+  } else if(s12===0&&s90===0&&isRecentArrival(c)){
     rec='keep'; act$='Keep: new arrival, no sales history yet'; W.push(`${fmtN(av)} available`);
   } else if(s12===0&&s90===0){
     if(cic){ rec='buyback'; act$=`Buyback: ${fmtN(units)} units with no sales in 12 months`; W.push(`${fmtN(units)} units on the shelf, worth ${money$} at store price`); W.push('CIC-stocked inventory: Movement buys back the remaining units and the SKU is retired'); }
@@ -409,7 +412,7 @@ const availOf=c=>c.availPos!=null?c.availPos:Math.max(c.avail||0,0);
 const rateOf=c=>c.rate!=null?c.rate:(c.sold90?c.sold90/3:(c.sold12||0)/12);
 const msOf=c=>{ if(c.ms!==undefined) return c.ms; const r=rateOf(c); return r>0?(availOf(c)+(c.onOrder||0))/r:null; };
 function health(c){
-  if(c.relaunched||((c.isNew||(ageOf(c.added)??9)<0.25)&&!c.sold12)) return 'fresh';
+  if(c.relaunched||(isRecentArrival(c)&&!c.sold12)) return 'fresh';
   if(availOf(c)+(c.onOrder||0)<=0) return 'retiring';
   if(!rateOf(c)) return 'stalled';
   const ms=msOf(c), ch=pct(c.sold12,c.soldPrior);
@@ -424,7 +427,6 @@ const unitOf=c=>typeof c.unit==='number'?c.unit:(parseFloat(String(c.price||'').
 const fmtMoney=n=>n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e4?'$'+Math.round(n/1e3)+'K':'$'+Math.round(n).toLocaleString('en-US');
 const fmtDay=d=>{ if(!d) return '—'; const x=new Date(d+'T12:00:00'); return isNaN(x)?d:x.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
 const fmtMonYr=d=>{ if(!d) return '—'; const x=new Date(d+'T12:00:00'); return isNaN(x)?d:x.toLocaleDateString('en-US',{month:'long',year:'numeric'}); };
-const ageOf=d=>{ if(!d) return null; const ms=Date.now()-new Date(d+'T12:00:00').getTime(); return ms/(365.25*864e5); };
 
 /* sample set: only used while no real store data is loaded; every name says "Sample" */
 let SAMPLE=null;
