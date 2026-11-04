@@ -54,6 +54,9 @@ function toggleCart(it,size){ if(cart[it.id]) delete cart[it.id]; else cart[it.i
 const SIZES=it=>{ if(!it.quote||!it.quote.ext) return null; const base=(it.quote.base||'').split('–'); const order=['XS','S','M','L','XL','2XL','3XL','4XL','5XL','6XL']; const a=order.indexOf(base[0]), b=order.indexOf(base[1]); const list=(a>=0&&b>=0)?order.slice(a,b+1):[]; return list.concat(it.quote.ext.map(e=>e[0])); };
 let unsub=null;
 let current = {brand:null, item:null, mediaIdx:0, draft:null, cat:'all', sort:'featured'};
+/* Remembers the scroll position of each catalog/current-inventory grid when the reviewer leaves it (e.g. to open an item and make a decision), so clicking "Back" returns them to the same row of products instead of the top of the list. Keyed by hash. */
+const scrollPos = {};
+window.addEventListener('hashchange', e=>{ try{ const oh=new URL(e.oldURL).hash.slice(1); if(oh) scrollPos[oh]=window.scrollY; }catch(err){} });
 const CAT_ORDER=['Apparel','Desk','Drinkware','Bags','Tech','Tools'];
 /* item-type order used on every catalog page: polos, jackets/layers, shirts & tees, headwear, other apparel, then office, drinkware, bags, tech, tools, outdoor, events, giveaways */
 function typeRank(name,cat){ const n=String(name||'').toLowerCase(), c=String(cat||'').toLowerCase();
@@ -150,14 +153,15 @@ function fmtMonYr(d){ if(!d) return '—'; const x=new Date(d+'T12:00:00'); retu
 /* ---------- routing ---------- */
 function route(){
   const h=(location.hash||'#').slice(1);
+  let top=0;
   if(h==='summary'){ current.brand=null; current.item=null; renderSummary(); }
   else if(h==='samples'){ current.brand=null; current.item=null; renderSamples(); }
   else if(h==='history'){ current.brand=null; current.item=null; renderHistory(); }
   else if(h.startsWith('inv-')){ const c=CURRENT.find(x=>x.id===h.slice(4)); if(c){ current.item=null; current.inv=c.id; current.brand=c.brand; current.invDraft=null; renderInvItem(c);} else { location.hash='#fnd-current'; return; } }
-  else if(h.endsWith('-current')){ const b=BRANDS.find(x=>x.id===h.slice(0,-8))||BRANDS[0]; current.brand=b.id; current.item=null; current.inv=null; renderCurrent(b); }
+  else if(h.endsWith('-current')){ const b=BRANDS.find(x=>x.id===h.slice(0,-8))||BRANDS[0]; current.brand=b.id; current.item=null; current.inv=null; renderCurrent(b); top=scrollPos[h]||0; }
   else if(h.startsWith('item-')){ const it=ITEMS.find(i=>i.id===h.slice(5)); if(it){ current.item=it.id; current.brand=it.brand; current.mediaIdx=0; current.draft=null; renderItem(it);} else { location.hash='#fnd'; return; } }
-  else { const b=BRANDS.find(b=>b.id===h)||BRANDS[0]; if(current.brand!==b.id) current.cat='all'; current.brand=b.id; current.item=null; renderBrand(b); }
-  renderTabs(); renderProgress(); window.scrollTo({top:0});
+  else { const b=BRANDS.find(b=>b.id===h)||BRANDS[0]; if(current.brand!==b.id) current.cat='all'; current.brand=b.id; current.item=null; renderBrand(b); top=scrollPos[h]||0; }
+  renderTabs(); renderProgress(); window.scrollTo({top});
 }
 window.addEventListener('hashchange',route);
 
