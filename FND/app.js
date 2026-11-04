@@ -152,16 +152,16 @@ function fmtMonYr(d){ if(!d) return '—'; const x=new Date(d+'T12:00:00'); retu
 
 /* ---------- routing ---------- */
 function route(){
-  const h=(location.hash||'#').slice(1);
+  const h=(location.hash||'#').slice(1);const samePage=(h===current.lastRouteHash),keepY=window.scrollY;
   let top=0;
   if(h==='summary'){ current.brand=null; current.item=null; renderSummary(); }
   else if(h==='samples'){ current.brand=null; current.item=null; renderSamples(); }
   else if(h==='history'){ current.brand=null; current.item=null; renderHistory(); }
   else if(h.startsWith('inv-')){ const c=CURRENT.find(x=>x.id===h.slice(4)); if(c){ current.item=null; current.inv=c.id; current.brand=c.brand; current.invDraft=null; renderInvItem(c);} else { location.hash='#fnd-current'; return; } }
-  else if(h.endsWith('-current')){ const b=BRANDS.find(x=>x.id===h.slice(0,-8))||BRANDS[0]; current.brand=b.id; current.item=null; current.inv=null; renderCurrent(b); top=scrollPos[h]||0; }
+  else if(h.endsWith('-current')){ const b=BRANDS.find(x=>x.id===h.slice(0,-8))||BRANDS[0]; current.brand=b.id; current.item=null; current.inv=null; renderCurrent(b); top=samePage?keepY:(scrollPos[h]||0); }
   else if(h.startsWith('item-')){ const it=ITEMS.find(i=>i.id===h.slice(5)); if(it){ current.item=it.id; current.brand=it.brand; current.mediaIdx=0; current.draft=null; renderItem(it);} else { location.hash='#fnd'; return; } }
-  else { const b=BRANDS.find(b=>b.id===h)||BRANDS[0]; if(current.brand!==b.id) current.cat='all'; current.brand=b.id; current.item=null; renderBrand(b); top=scrollPos[h]||0; }
-  renderTabs(); renderProgress(); window.scrollTo({top});
+  else { const b=BRANDS.find(b=>b.id===h)||BRANDS[0]; if(current.brand!==b.id) current.cat='all'; current.brand=b.id; current.item=null; renderBrand(b); top=samePage?keepY:(scrollPos[h]||0); }
+  current.lastRouteHash=h; renderTabs(); renderProgress(); window.scrollTo({top});
 }
 window.addEventListener('hashchange',route);
 
