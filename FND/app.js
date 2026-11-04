@@ -224,10 +224,10 @@ function renderCurrent(b){
 async function quickDecideCurrent(id,status){
   const c=CURRENT.find(x=>x.id===id); if(!c) return; const b=BRANDS.find(x=>x.id===c.brand);
   const prev=invDecisions[id]||{};
-  if(prev.status===status){ confirmClear(INVDEC[status].label,true,async()=>{ await clearSaved('invdecisions',invDecisions,id); toast('Decision cleared'); renderCurrent(b); }); return; }
+  if(prev.status===status){ confirmClear(INVDEC[status].label,true,async()=>{ await clearSaved('invdecisions',invDecisions,id); toast('Decision cleared'); const sp=window.scrollY; renderCurrent(b); window.scrollTo({top:sp}); }); return; }
   const hist=Array.isArray(prev.history)?prev.history.slice(-19):[]; if(prev.status) hist.push({status:prev.status,notes:prev.notes||'',reviewer:prev.reviewer||'',at:prev.updatedAt||''});
   const doc={sku:c.id,name:c.name,brand:c.brand,cicRec:c.rec,status,notes:prev.notes||'',reviewer:prev.reviewer||myName||'',updatedAt:new Date().toISOString(),history:hist};
-  try{ const where=await writeShared('invdecisions',id,doc); invDecisions[id]=where==='local'?localDec['invdecisions/'+id]:doc; toast(where==='local'?'Saved on this device. Email your decisions to CIC when done.':'Decision saved'); renderCurrent(b); }
+  try{ const where=await writeShared('invdecisions',id,doc); invDecisions[id]=where==='local'?localDec['invdecisions/'+id]:doc; toast(where==='local'?'Saved on this device. Email your decisions to CIC when done.':'Decision saved'); const sp=window.scrollY; renderCurrent(b); window.scrollTo({top:sp}); }
   catch(e){ console.error(e); if(e&&e.code==='invalid_argument'){canWrite=false; toast('This link is view-only');} else toast('Could not save, try again'); }
 }
 const STORELIST={'In Store':'In Store (shoppers can order it)','Inactive':'Inactive (hidden from shoppers)','Incomplete':'Incomplete (listing not finished, not live yet)'};
@@ -324,10 +324,10 @@ function renderBrand(b){
 async function quickDecideItem(id,status){
   const it=ITEMS.find(x=>x.id===id); if(!it) return; const b=BRANDS.find(x=>x.id===it.brand);
   const prev=decisions[id]||{};
-  if(prev.status===status){ confirmClear(STATUS[status].label,true,async()=>{ await clearSaved('decisions',decisions,id); renderProgress(); toast('Decision cleared'); renderBrand(b); }); return; }
+  if(prev.status===status){ confirmClear(STATUS[status].label,true,async()=>{ await clearSaved('decisions',decisions,id); renderProgress(); toast('Decision cleared'); const sp=window.scrollY; renderBrand(b); window.scrollTo({top:sp}); }); return; }
   const hist=Array.isArray(prev.history)?prev.history.slice(-19):[]; if(prev.status) hist.push({status:prev.status,priority:prev.priority||0,notes:prev.notes||'',reviewer:prev.reviewer||'',at:prev.updatedAt||''});
   const doc={itemId:it.id, sku:it.sku, name:it.name, brand:it.brand, status, priority:prev.priority||0, notes:prev.notes||'', reviewer:prev.reviewer||myName||'', updatedAt:new Date().toISOString(), history:hist};
-  try{ const where=await writeShared('decisions',id,doc); decisions[id]=where==='local'?localDec['decisions/'+id]:doc; toast(where==='local'?'Saved on this device. Email your decisions to CIC when done.':'Decision saved'); renderProgress(); renderBrand(b); }
+  try{ const where=await writeShared('decisions',id,doc); decisions[id]=where==='local'?localDec['decisions/'+id]:doc; toast(where==='local'?'Saved on this device. Email your decisions to CIC when done.':'Decision saved'); renderProgress(); const sp=window.scrollY; renderBrand(b); window.scrollTo({top:sp}); }
   catch(e){ console.error(e); if(e&&e.code==='invalid_argument'){canWrite=false; toast('This link is view-only');} else toast('Could not save, try again'); }
 }
 
