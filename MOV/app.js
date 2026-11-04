@@ -60,6 +60,9 @@ const STORELIST={'In Store':'In Store (shoppers can order it)','Inactive':'Inact
 let db=null, userApi=null, downloadsApi=null, dbReady=false, canWrite=null, myName='';
 const invDecisions={}, decisions={};
 let current={brand:'mm', mode:'current', invRec:'all', cat:'all', sort:'store', draft:null, media:0};
+/* Remembers the scroll position of each catalog/current-inventory grid when the reviewer leaves it (e.g. to open an item and make a decision), so clicking "Back" returns them to the same row of products instead of the top of the list. Keyed by hash. */
+const scrollPos = {};
+window.addEventListener('hashchange', e=>{ try{ const oh=new URL(e.oldURL).hash.slice(1)||'mm-current'; if(oh) scrollPos[oh]=window.scrollY; }catch(err){} });
 let searchQ='';
 
 const $=s=>document.querySelector(s);
@@ -162,13 +165,14 @@ for(let i=CURRENT.length-1;i>=0;i--){ const c=CURRENT[i]; if(c.availPos<=0&&c.on
 function route(keep){
   const h=location.hash.slice(1)||'mm-current';
   current.draft=null; current.media=0;
+  let top=0;
   if(h==='summary') renderSummary();
   else if(h==='stats') renderStats();
   else if(h.startsWith('inv-')){ const c=CURRENT.find(x=>x.id===h.slice(4)); if(!c){location.hash='#mm-current';return;} current.brand=c.brand; current.mode='current'; renderInvItem(c); }
   else if(h.startsWith('item-')){ const it=ITEMS.find(x=>x.id===h.slice(5)); if(!it){location.hash='#mm';return;} current.brand=it.brand; current.mode='suggest'; renderItem(it); }
-  else if(h.endsWith('-current')){ const b=brandOf(h.slice(0,-8)); if(current.brand!==b.id||current.mode!=='current'){current.invRec='all';current.cat='all';} current.brand=b.id; current.mode='current'; renderCurrent(b); }
-  else { const b=brandOf(h); if(current.brand!==b.id||current.mode!=='suggest'){current.cat='all';} current.brand=b.id; current.mode='suggest'; renderSuggest(b); }
-  renderTabs(); renderProgress(); if(keep!==true) window.scrollTo({top:0});
+  else if(h.endsWith('-current')){ const b=brandOf(h.slice(0,-8)); if(current.brand!==b.id||current.mode!=='current'){current.invRec='all';current.cat='all';} current.brand=b.id; current.mode='current'; renderCurrent(b); top=scrollPos[h]||0; }
+  else { const b=brandOf(h); if(current.brand!==b.id||current.mode!=='suggest'){current.cat='all';} current.brand=b.id; current.mode='suggest'; renderSuggest(b); top=scrollPos[h]||0; }
+  renderTabs(); renderProgress(); if(keep!==true) window.scrollTo({top});
 }
 window.addEventListener('hashchange',route);
 
