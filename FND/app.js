@@ -28,7 +28,8 @@ const INVREC={keep:{label:'Keep',cls:'keep'},disc:{label:'Discontinue',cls:'disc
 const showRec=c=>!(c.rec==='disc'&&c.skuStatus==='Discontinued');
 const INVDEC={agree:{label:'Agree with CIC',cls:'ok',icon:'✓'},keep:{label:'Keep',cls:'ok',icon:'✓'},disc:{label:'Discontinue',cls:'bad',icon:'✕'},discuss:{label:'Discuss',cls:'warn',icon:'?'},sellthru:{label:'Sell Thru',cls:'ok',icon:'✓'},buyback:{label:'Buyback',cls:'bad',icon:'✕'}};
 let invDecisions={};
-let ordered={}; /* ordered/<itemId> = {orderedAt, by, note}: CIC has placed the order (SKU budget sent) */
+let ordered={};
+(function(){ if(document.getElementById('orderedCss')) return; const st=document.createElement('style'); st.id='orderedCss'; st.textContent='.orderedband{position:absolute;top:50%;left:-15%;width:130%;transform:translateY(-50%) rotate(-18deg);z-index:4;background:rgba(31,122,58,.92);color:#fff;font-size:15px;font-weight:900;letter-spacing:4px;text-transform:uppercase;text-align:center;padding:8px 0;border-top:2px solid #fff;border-bottom:2px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.25);pointer-events:none}.gallery .main .orderedband{font-size:24px;letter-spacing:6px;padding:12px 0}'; document.head.appendChild(st); })(); /* band styles also live here so a cached index.html still shows the band */ /* ordered/<itemId> = {orderedAt, by, note}: CIC has placed the order (SKU budget sent) */
 const fmtA=c=>c.avail<0?`0 · ${fmtN(-c.avail)} back-ordered`:fmtN(c.avail);
 const fmtN=n=>(n<0?'-':'')+Math.abs(n).toLocaleString('en-US');
 const pct=(a,b)=>b?Math.round((a-b)/b*100):null;
